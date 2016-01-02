@@ -2,6 +2,7 @@ package com.superschmalgames;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -25,7 +26,7 @@ public class DemoGame extends ApplicationAdapter {
 
 	//The create() method gets called once, just to initialize variables and set everything up.
 	@Override
-	public void create () {
+	public void create() {
 
 		//Initialize all declared image/batch/sprite/font/etc variables.
 		batch = new SpriteBatch();
@@ -40,7 +41,7 @@ public class DemoGame extends ApplicationAdapter {
 		img1 = new Texture("kyloren.jpg");  //Set image variables to be pictures saved in /core/assets/.
 		img2 = new Texture("badlogic.jpg");
 
-		sprite1 = new Sprite(img2);  //Set the visuals for the sprite to be whatever is in img2.
+		sprite1 = new Sprite(img1);  //Set the visuals for the sprite to be whatever is in img2.
 
 		//Sprites have their own fields. You can set their position fields like so:
 		sprite1.setPosition(Gdx.graphics.getWidth()/2-sprite1.getWidth()/2,
@@ -49,10 +50,27 @@ public class DemoGame extends ApplicationAdapter {
 
 	//The render() method is what's called every time the screen refreshes.
 	@Override
-	public void render () {
+	public void render() {
 
-		//Clear the screen.
-		Gdx.gl.glClearColor(0, 0, 1, 1);   //Arguments are RGB values and Opacity, all between 0 and 1.
+		//Take keyboard input to move the sprite around the screen. Uses polling (instead of event-driven) to look for input.
+		if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+			sprite1.translateX(-1f);
+		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+			sprite1.translateX(1f);
+		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
+			sprite1.translateY(-1f);
+		if(Gdx.input.isKeyPressed(Input.Keys.UP))
+			sprite1.translateY(1f);
+
+		//Take mouse input to move the sprite around the screen. Coordinate systems are different between the LibGDX
+		//coordinate plane and standard UI coordinate plane, so mathematical correction for Y-axis was need in order
+		//to make correct relocation possible. Uses polling to look for input.
+		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT))
+			sprite1.setPosition(Gdx.input.getX()-sprite1.getWidth()/2,
+								Gdx.graphics.getHeight()-Gdx.input.getY()-sprite1.getHeight()/2);
+
+		//Clear the screen on each refresh.
+		Gdx.gl.glClearColor(0, 0, 0, 1);   //Arguments are RGB values and Opacity, all between 0 and 1.
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		//Whatever is drawn comes between the "begin" and "end" statements. (Verify this is necessary!)
@@ -60,13 +78,13 @@ public class DemoGame extends ApplicationAdapter {
 
 		//Two different methods for drawing something to the screen. One uses just a raw image, the other uses
 		//a sprite which already contains its own positional data. *Be sure to only use one or the other for now!*
-		batch.draw(img1,
-				Gdx.graphics.getWidth()/2-img1.getWidth()/2,
-				Gdx.graphics.getHeight()/2-img1.getHeight()/2);
+		//batch.draw(img1,
+		//		Gdx.graphics.getWidth()/2-img1.getWidth()/2,
+		//		Gdx.graphics.getHeight()/2-img1.getHeight()/2);
 
-		//batch.draw(sprite1,
-		// 			sprite1.getX(),
-		// 			sprite1.getY());
+		batch.draw(sprite1,
+		 			sprite1.getX(),
+		 			sprite1.getY());
 
 		//Draw a font to the screen using bitmap fonts. The layout variable is used to adjust the alignment of the
 		//font so that it is centered on the screen from left to right and moved up just above the top border of
@@ -77,5 +95,12 @@ public class DemoGame extends ApplicationAdapter {
 				Gdx.graphics.getHeight()/2+layout1.height+img1.getHeight()/2);
 
 		batch.end();
+	}
+
+	//Handles the bit of garbage collection that ISN'T done automatically (no more memory leaks!).
+	@Override
+	public void dispose(){
+		img1.dispose();
+		img2.dispose();
 	}
 }
